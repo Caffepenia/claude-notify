@@ -4,12 +4,12 @@ macOS desktop notifications for Claude Code. Get alerted with a sound, spoken te
 
 ## Install
 
-```bash
-# From GitHub
-/plugin install Caffepenia/claude-notify
+1. In Claude Code, run `/plugin` → **Add Marketplace** → enter `Caffepenia/claude-notify`
+2. Enable the `claude-notify` plugin from the marketplace list
 
-# Or load directly
-claude --plugin-dir ~/claude-notify
+Or load directly for a single session:
+```bash
+claude --plugin-dir ~/claude-notify/plugins/claude-notify
 ```
 
 ## Usage

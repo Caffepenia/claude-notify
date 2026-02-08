@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-notify-marketplace",
+  "description": "Personal marketplace for claude-notify plugin",
+  "owner": {
+    "name": "Caffepenia"
+  },
+  "plugins": [
+    {
+      "name": "claude-notify",
+      "description": "macOS desktop notifications for Claude Code (sound/speech/off)",
+      "version": "1.0.0",
+      "source": "./plugins/claude-notify",
+      "category": "productivity"
+    }
+  ]
+}
