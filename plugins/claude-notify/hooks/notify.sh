@@ -31,12 +31,17 @@ case "$event" in
   *)          sound="Glass"; title="Claude Code" ;;
 esac
 
-# Build and send notification
+# Banner notification (independent of sound)
 if $has_title || $has_message; then
-  cmd="display notification \"$($has_message && echo "$message" || echo "")\""
+  body=""
+  $has_message && body="$message"
+  cmd="display notification \"$body\""
   $has_title && cmd="$cmd with title \"$title\""
-  $has_sound && cmd="$cmd sound name \"$sound\""
-  osascript -e "$cmd"
-elif $has_sound; then
-  afplay "/System/Library/Sounds/${sound}.aiff" &
+  osascript -e "$cmd" 2>/dev/null
+fi
+
+# Sound via afplay (independent of banner)
+# Note: osascript's "sound name" is unreliable on modern macOS
+if $has_sound; then
+  afplay "/System/Library/Sounds/${sound}.aiff" 2>/dev/null &
 fi
