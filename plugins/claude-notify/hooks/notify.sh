@@ -1,63 +1,42 @@
 #!/bin/bash
-# Claude Code notification hook (4-mode: sound / speech / narrate / off)
-# Reads ~/.claude/notify-enabled → "sound", "speech", "narrate", or missing/empty = off
+# Claude Code notification hook (toggle-based: sound / title / message)
+# Reads ~/.claude/notify-enabled → comma-separated toggles, or missing/empty = off
 
-mode=""
-[ -f ~/.claude/notify-enabled ] && mode="$(cat ~/.claude/notify-enabled)"
-mode="${mode:-off}"
-[ "$mode" = "off" ] && exit 0
+config=""
+[ -f ~/.claude/notify-enabled ] && config="$(cat ~/.claude/notify-enabled)"
 
+# Legacy migration (in-memory only, does not write back)
+case "$config" in
+  sound)          config="sound,title,message" ;;
+  speech|narrate) config="title,message" ;;
+esac
+
+# Parse toggles
+has_sound=false; has_title=false; has_message=false
+[[ ",$config," == *,sound,* ]]   && has_sound=true
+[[ ",$config," == *,title,* ]]   && has_title=true
+[[ ",$config," == *,message,* ]] && has_message=true
+
+$has_sound || $has_title || $has_message || exit 0
+
+# Event definitions
 event="${1:-stop}"
 message="${2:-Claude Code needs your attention}"
 
 case "$event" in
-  stop)
-    sound="Glass"
-    speech="Work complete"
-    title="Claude Code - Work Complete"
-    ;;
-  permission)
-    sound="Ping"
-    speech="Permission needed"
-    title="Claude Code - Permission Required"
-    ;;
-  idle)
-    sound="Purr"
-    speech="Idle, waiting"
-    title="Claude Code - Waiting for Input"
-    ;;
-  question)
-    sound="Tink"
-    speech="Question for you"
-    title="Claude Code - Question for You"
-    ;;
-  *)
-    sound="Glass"
-    speech="Attention needed"
-    title="Claude Code"
-    ;;
+  stop)       sound="Glass"; title="Claude Code - Work Complete" ;;
+  permission) sound="Ping";  title="Claude Code - Permission Required" ;;
+  idle)       sound="Purr";  title="Claude Code - Waiting for Input" ;;
+  question)   sound="Tink";  title="Claude Code - Question for You" ;;
+  *)          sound="Glass"; title="Claude Code" ;;
 esac
 
-if [ "$mode" = "narrate" ]; then
-  input=$(cat)
-  gist=""
-  case "$event" in
-    question)
-      gist=$(echo "$input" | jq -r '.tool_input.questions[0].question // empty' 2>/dev/null) ;;
-    permission|idle)
-      gist=$(echo "$input" | jq -r '.message // empty' 2>/dev/null) ;;
-  esac
-  narrate_label="${title#Claude Code - }"
-  osascript -e "display notification \"$message\" with title \"$title\""
-  if [ -n "$gist" ]; then
-    say "$narrate_label. $gist" &
-  else
-    say "$narrate_label" &
-  fi
-elif [ "$mode" = "speech" ]; then
-  osascript -e "display notification \"$message\" with title \"$title\""
-  say "$speech"
-else
-  # Default: sound mode
-  osascript -e "display notification \"$message\" with title \"$title\" sound name \"$sound\""
+# Build and send notification
+if $has_title || $has_message; then
+  cmd="display notification \"$($has_message && echo "$message" || echo "")\""
+  $has_title && cmd="$cmd with title \"$title\""
+  $has_sound && cmd="$cmd sound name \"$sound\""
+  osascript -e "$cmd"
+elif $has_sound; then
+  afplay "/System/Library/Sounds/${sound}.aiff" &
 fi
