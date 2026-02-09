@@ -1,6 +1,6 @@
 #!/bin/bash
-# Claude Code notification hook (3-mode: sound / speech / off)
-# Reads ~/.claude/notify-enabled → "sound", "speech", or missing/empty = off
+# Claude Code notification hook (4-mode: sound / speech / narrate / off)
+# Reads ~/.claude/notify-enabled → "sound", "speech", "narrate", or missing/empty = off
 
 mode=""
 [ -f ~/.claude/notify-enabled ] && mode="$(cat ~/.claude/notify-enabled)"
@@ -38,7 +38,10 @@ case "$event" in
     ;;
 esac
 
-if [ "$mode" = "speech" ]; then
+if [ "$mode" = "narrate" ]; then
+  osascript -e "display notification \"$message\" with title \"$title\""
+  say "$title. $message"
+elif [ "$mode" = "speech" ]; then
   osascript -e "display notification \"$message\" with title \"$title\""
   say "$speech"
 else
