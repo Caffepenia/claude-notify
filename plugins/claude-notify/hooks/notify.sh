@@ -39,8 +39,21 @@ case "$event" in
 esac
 
 if [ "$mode" = "narrate" ]; then
+  input=$(cat)
+  gist=""
+  case "$event" in
+    question)
+      gist=$(echo "$input" | jq -r '.tool_input.questions[0].question // empty' 2>/dev/null) ;;
+    permission|idle)
+      gist=$(echo "$input" | jq -r '.message // empty' 2>/dev/null) ;;
+  esac
+  narrate_label="${title#Claude Code - }"
   osascript -e "display notification \"$message\" with title \"$title\""
-  say "$title. $message"
+  if [ -n "$gist" ]; then
+    say "$narrate_label. $gist" &
+  else
+    say "$narrate_label" &
+  fi
 elif [ "$mode" = "speech" ]; then
   osascript -e "display notification \"$message\" with title \"$title\""
   say "$speech"

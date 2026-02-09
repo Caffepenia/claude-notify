@@ -23,7 +23,7 @@ Based on `$ARGUMENTS`, update the notification mode stored in `~/.claude/notify-
   2. Use `AskUserQuestion` to let the user pick. Show the current mode in the question. Options:
      - **sound** / 提示音 — Banner + chime sound
      - **speech** / 語音 — Banner + spoken phrase
-     - **narrate** / 朗讀 — Banner + read aloud title & message
+     - **narrate** / 朗讀 — Banner + read aloud event & dynamic gist
      - **off** / 關閉 — Disable notifications
   3. Apply the selected mode using the rules above
 
