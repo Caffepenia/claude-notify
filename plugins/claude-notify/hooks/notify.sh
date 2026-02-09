@@ -30,6 +30,7 @@ case "$event" in
   permission) sound="Ping";  title="Claude Code - Permission Required" ;;
   idle)       sound="Purr";  title="Claude Code - Waiting for Input" ;;
   question)   sound="Tink";  title="Claude Code - Question for You" ;;
+  exit)       sound="Glass"; title="Claude Code - Goodbye" ;;
   *)          sound="Glass"; title="Claude Code" ;;
 esac
 
@@ -42,6 +43,11 @@ if $has_message; then
       gist=$(echo "$input" | jq -r '.tool_input.questions[0].question // empty' 2>/dev/null) ;;
     permission|idle)
       gist=$(echo "$input" | jq -r '.message // empty' 2>/dev/null) ;;
+    exit)
+      transcript=$(echo "$input" | jq -r '.transcript_path // empty' 2>/dev/null)
+      if [ -n "$transcript" ] && [ -f "$transcript" ]; then
+        gist=$(tail -5 "$transcript" | grep -o '<local-command-stdout>[^<]*</local-command-stdout>' | tail -1 | sed 's/<local-command-stdout>//;s/<\/local-command-stdout>//')
+      fi ;;
   esac
 fi
 

@@ -53,6 +53,7 @@ When both `title` and `message` are enabled, they combine intelligently:
 | Permission | Permission prompt appears | Ping | Claude Code - Permission Required |
 | Idle | Waiting for input | Purr | Claude Code - Waiting for Input |
 | Question | AskUserQuestion / ExitPlanMode | Tink | Claude Code - Question for You |
+| Exit | User types /exit | Glass | Claude Code - Goodbye |
 
 ## How it works
 
