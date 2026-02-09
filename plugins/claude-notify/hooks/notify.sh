@@ -59,24 +59,34 @@ if $has_banner; then
 fi
 
 # Voice via say (title = event label, message = dynamic gist)
+# Use Meijia voice for Chinese text, default voice for English
+_say_smart() {
+  local _b _c
+  _b=$(printf "%s" "$1" | wc -c | tr -d " ")
+  _c=${#1}
+  if [ "$_b" -gt "$_c" ]; then
+    say -v Meijia "$1"
+  else
+    say "$1"
+  fi
+}
+
 narrate_label="${title#Claude Code - }"
-text=""
 if $has_title && $has_message; then
   if [ -n "$gist" ]; then
-    text="$narrate_label. $gist"
+    (say "$narrate_label" && _say_smart "$gist") &
   else
-    text="$narrate_label"
+    say "$narrate_label" &
   fi
 elif $has_title; then
-  text="$narrate_label"
+  say "$narrate_label" &
 elif $has_message; then
   if [ -n "$gist" ]; then
-    text="$gist"
+    _say_smart "$gist" &
   else
-    text="$message"
+    _say_smart "$message" &
   fi
 fi
-[ -n "$text" ] && say "$text" &
 
 # Sound via afplay (independent of banner and voice)
 if $has_sound; then
