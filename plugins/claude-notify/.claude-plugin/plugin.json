@@ -1,5 +1,5 @@
 {
   "name": "claude-notify",
-  "description": "macOS desktop notifications for Claude Code (sound/title/message toggles)",
-  "version": "2.0.0"
+  "description": "macOS desktop notifications for Claude Code (sound/title/message/banner toggles)",
+  "version": "2.1.0"
 }
