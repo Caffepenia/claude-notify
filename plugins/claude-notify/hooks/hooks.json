@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/notify.sh permission 'Needs your permission to proceed'",
+            "command": "if [ -f /tmp/claude-notify-question-pending ]; then rm -f /tmp/claude-notify-question-pending; exit 0; fi; ${CLAUDE_PLUGIN_ROOT}/hooks/notify.sh permission 'Needs your permission to proceed'",
             "timeout": 5
           }
         ]
@@ -33,13 +33,13 @@
         ]
       }
     ],
-    "PostToolUse": [
+    "PreToolUse": [
       {
         "matcher": "AskUserQuestion|ExitPlanMode",
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/notify.sh question 'Has a question for you'",
+            "command": "touch /tmp/claude-notify-question-pending && ${CLAUDE_PLUGIN_ROOT}/hooks/notify.sh question 'Has a question for you'",
             "timeout": 5
           }
         ]
