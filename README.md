@@ -53,11 +53,10 @@ When both `title` and `message` are enabled, they combine intelligently:
 | Permission | Permission prompt appears | Ping | Claude Code - Permission Required |
 | Idle | Waiting for input | Purr | Claude Code - Waiting for Input |
 | Question | AskUserQuestion / ExitPlanMode | Tink | Claude Code - Question for You |
-| Exit | User types /exit | Glass | Claude Code - Goodbye |
 
 ## How it works
 
-The plugin registers hooks for `Stop`, `Notification`, and `PostToolUse` events. Each hook calls `notify.sh`, which reads `~/.claude/notify-enabled` for a comma-separated list of enabled toggles (`sound`, `title`, `message`, `banner`):
+The plugin registers hooks for `Stop`, `Notification`, and `PreToolUse` events. Each hook calls `notify.sh`, which reads `~/.claude/notify-enabled` for a comma-separated list of enabled toggles (`sound`, `title`, `message`, `banner`):
 
 - **sound** — plays a chime via `afplay`
 - **title** — speaks the event label via `say` (e.g. "Work Complete")
