@@ -56,12 +56,14 @@ When both `title` and `message` are enabled, they combine intelligently:
 
 ## How it works
 
-The plugin registers hooks for `Stop`, `Notification`, and `PreToolUse` events. Each hook calls `notify.sh`, which reads `~/.claude/notify-enabled` for a comma-separated list of enabled toggles (`sound`, `title`, `message`, `banner`):
+The plugin registers hooks for `Stop`, `Notification`, `PreToolUse`, and `UserPromptSubmit` events. Each hook calls `notify.sh`, which reads `~/.claude/notify-enabled` for a comma-separated list of enabled toggles (`sound`, `title`, `message`, `banner`):
 
 - **sound** — plays a chime via `afplay`
 - **title** — speaks the event label via `say` (e.g. "Work Complete")
 - **message** — speaks dynamic content via `say` (e.g. the actual question being asked)
 - **banner** — shows a macOS notification banner via `osascript`
 - Any combination works — file missing or empty means all off
+
+When you submit a new prompt, any still-playing speech or sound from previous notifications is automatically cancelled. This uses PID tracking (not `pkill say`) so it only stops processes started by this plugin and won't affect system speech like VoiceOver.
 
 Legacy config values (`sound`, `speech`, `narrate` as single mode) are auto-converted in memory.

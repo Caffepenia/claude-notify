@@ -2,6 +2,19 @@
 # Claude Code notification hook (toggle-based: sound / title / message / banner)
 # Reads ~/.claude/notify-enabled → comma-separated toggles, or missing/empty = off
 
+# Cancel mode: kill running say/afplay from previous notifications
+if [ "$1" = "cancel" ]; then
+  pidfile="/tmp/claude-notify-pids"
+  if [ -f "$pidfile" ]; then
+    while read -r pid; do
+      kill "$pid" 2>/dev/null
+      pkill -P "$pid" 2>/dev/null
+    done < "$pidfile"
+    rm -f "$pidfile"
+  fi
+  exit 0
+fi
+
 config=""
 [ -f ~/.claude/notify-enabled ] && config="$(cat ~/.claude/notify-enabled)"
 
@@ -65,24 +78,40 @@ _say_smart() {
   fi
 }
 
+# Cancel any still-running previous notification (prevents voice overlap)
+pidfile="/tmp/claude-notify-pids"
+if [ -f "$pidfile" ]; then
+  while read -r pid; do
+    kill "$pid" 2>/dev/null
+    pkill -P "$pid" 2>/dev/null
+  done < "$pidfile"
+fi
+: > "$pidfile"
+
 narrate_label="${title#Claude Code - }"
 if $has_title && $has_message; then
   if [ -n "$gist" ]; then
     (say "$narrate_label" && _say_smart "$gist") &
+    echo $! >> "$pidfile"
   else
     say "$narrate_label" &
+    echo $! >> "$pidfile"
   fi
 elif $has_title; then
   say "$narrate_label" &
+  echo $! >> "$pidfile"
 elif $has_message; then
   if [ -n "$gist" ]; then
     _say_smart "$gist" &
+    echo $! >> "$pidfile"
   else
     _say_smart "$message" &
+    echo $! >> "$pidfile"
   fi
 fi
 
 # Sound via afplay (independent of banner and voice)
 if $has_sound; then
   afplay "/System/Library/Sounds/${sound}.aiff" 2>/dev/null &
+  echo $! >> "$pidfile"
 fi
