@@ -45,6 +45,18 @@ When both `title` and `message` are enabled, they combine intelligently:
 | message only | Yes | "Which approach?" |
 | message only | No | "Finished working" (fallback) |
 
+### Audio device selection
+
+By default, speech routes to the system's default audio device. If you have a Bluetooth speaker connected and want speech to come from the Mac's built-in speaker instead:
+
+```
+/claude-notify:set device          # Interactive picker (lists all devices)
+/claude-notify:set device builtin  # Auto-detect built-in speaker
+/claude-notify:set device default  # Reset to system default
+```
+
+Config is stored in `~/.claude/notify-audio-device`. The `builtin` keyword auto-detects the built-in speaker at runtime. Sound effects (`afplay`) always use the system default since `afplay` doesn't support device selection.
+
 ## Events
 
 | Event | Trigger | Sound | Title |

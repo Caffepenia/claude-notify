@@ -18,6 +18,17 @@ fi
 config=""
 [ -f ~/.claude/notify-enabled ] && config="$(cat ~/.claude/notify-enabled)"
 
+audio_device=""
+[ -f ~/.claude/notify-audio-device ] && audio_device="$(cat ~/.claude/notify-audio-device)"
+
+say_device_args=()
+if [ -n "$audio_device" ] && [ "$audio_device" != "default" ]; then
+  if [ "$audio_device" = "builtin" ]; then
+    audio_device=$(say -a '?' 2>&1 | sed 's/^ *[0-9]* //' | grep -iE "^(Mac|iMac).*Speakers" | head -1)
+  fi
+  [ -n "$audio_device" ] && say_device_args=(-a "$audio_device")
+fi
+
 # Legacy migration (in-memory only, does not write back)
 case "$config" in
   sound)          config="sound,banner" ;;
@@ -72,9 +83,9 @@ _say_smart() {
   _b=$(printf "%s" "$1" | wc -c | tr -d " ")
   _c=${#1}
   if [ "$_b" -gt "$_c" ]; then
-    say -v Meijia "$1"
+    say "${say_device_args[@]}" -v Meijia "$1"
   else
-    say "$1"
+    say "${say_device_args[@]}" "$1"
   fi
 }
 
@@ -91,14 +102,14 @@ fi
 narrate_label="${title#Claude Code - }"
 if $has_title && $has_message; then
   if [ -n "$gist" ]; then
-    (say "$narrate_label" && _say_smart "$gist") &
+    (say "${say_device_args[@]}" "$narrate_label" && _say_smart "$gist") &
     echo $! >> "$pidfile"
   else
-    say "$narrate_label" &
+    say "${say_device_args[@]}" "$narrate_label" &
     echo $! >> "$pidfile"
   fi
 elif $has_title; then
-  say "$narrate_label" &
+  say "${say_device_args[@]}" "$narrate_label" &
   echo $! >> "$pidfile"
 elif $has_message; then
   if [ -n "$gist" ]; then

@@ -1,10 +1,11 @@
 ---
 disable-model-invocation: true
-argument-hint: "[off|all|sound|title|message|banner|...]"
+argument-hint: "[off|all|sound|title|message|banner|device ...|...]"
 allowed-tools:
   - Bash(echo *)
   - Bash(rm *)
   - Bash(cat *)
+  - Bash(say *)
   - AskUserQuestion
 ---
 
@@ -20,6 +21,28 @@ Based on `$ARGUMENTS`, update the enabled notification components stored in `~/.
 | `title` | 標題 | Speak the event title via `say` (e.g. "Work Complete") |
 | `message` | 訊息 | Speak dynamic content via `say` (e.g. the actual question text) |
 | `banner` | 橫幅 | Show macOS notification banner (title + body) |
+
+**Audio device**: Speech (`say`) can be routed to a specific output device via `~/.claude/notify-audio-device`. See the **device** argument below. Sound effects (`afplay`) always use the system default.
+
+## Device argument
+
+If `$ARGUMENTS` starts with `device`:
+
+- **`device`** (no value after it):
+  1. Run `say -a '?' 2>&1` to list available audio devices
+  2. Parse device names from output (each line: `<id> <name>`)
+  3. Use `AskUserQuestion` with options:
+     - **default** — Use system default audio device (no `-a` flag)
+     - **builtin** — Auto-detect built-in speaker at runtime
+     - Plus each detected device name from the `say -a '?'` output
+  4. If user selects "default": `rm -f ~/.claude/notify-audio-device`
+  5. If user selects "builtin": `echo "builtin" > ~/.claude/notify-audio-device`
+  6. Otherwise: `echo "<selected device>" > ~/.claude/notify-audio-device`
+- **`device default`**: run `rm -f ~/.claude/notify-audio-device`
+- **`device builtin`**: run `echo "builtin" > ~/.claude/notify-audio-device`
+- **`device <name>`**: run `echo "<name>" > ~/.claude/notify-audio-device`
+
+After any change, confirm: "Audio device set to **{value}**." or "Audio device set to **system default**." if default/removed.
 
 ## Rules
 
