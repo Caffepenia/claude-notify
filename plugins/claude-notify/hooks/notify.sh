@@ -102,27 +102,33 @@ fi
 narrate_label="${title#Claude Code - }"
 if $has_title && $has_message; then
   if [ -n "$gist" ]; then
-    (say "${say_device_args[@]}" "$narrate_label" && _say_smart "$gist") &
+    (say "${say_device_args[@]}" "$narrate_label" && _say_smart "$gist") </dev/null >/dev/null 2>&1 &
     echo $! >> "$pidfile"
+    disown $! 2>/dev/null
   else
-    say "${say_device_args[@]}" "$narrate_label" &
+    say "${say_device_args[@]}" "$narrate_label" </dev/null >/dev/null 2>&1 &
     echo $! >> "$pidfile"
+    disown $! 2>/dev/null
   fi
 elif $has_title; then
-  say "${say_device_args[@]}" "$narrate_label" &
+  say "${say_device_args[@]}" "$narrate_label" </dev/null >/dev/null 2>&1 &
   echo $! >> "$pidfile"
+  disown $! 2>/dev/null
 elif $has_message; then
   if [ -n "$gist" ]; then
-    _say_smart "$gist" &
+    _say_smart "$gist" </dev/null >/dev/null 2>&1 &
     echo $! >> "$pidfile"
+    disown $! 2>/dev/null
   else
-    _say_smart "$message" &
+    _say_smart "$message" </dev/null >/dev/null 2>&1 &
     echo $! >> "$pidfile"
+    disown $! 2>/dev/null
   fi
 fi
 
 # Sound via afplay (independent of banner and voice)
 if $has_sound; then
-  afplay "/System/Library/Sounds/${sound}.aiff" 2>/dev/null &
+  afplay "/System/Library/Sounds/${sound}.aiff" </dev/null >/dev/null 2>&1 &
   echo $! >> "$pidfile"
+  disown $! 2>/dev/null
 fi
