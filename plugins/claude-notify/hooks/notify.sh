@@ -2,9 +2,11 @@
 # Claude Code notification hook (toggle-based: sound / title / message / banner)
 # Reads ~/.claude/notify-enabled → comma-separated toggles, or missing/empty = off
 
+# Per-session PID file (PPID = the Claude Code process that spawned this hook)
+pidfile="/tmp/claude-notify-pids-$PPID"
+
 # Cancel mode: kill running say/afplay from previous notifications
 if [ "$1" = "cancel" ]; then
-  pidfile="/tmp/claude-notify-pids"
   if [ -f "$pidfile" ]; then
     while read -r pid; do
       kill "$pid" 2>/dev/null
@@ -70,9 +72,12 @@ if $has_message; then
 fi
 
 # Banner notification (macOS notification center)
+# Escape backslashes and double quotes to prevent AppleScript injection
 if $has_banner; then
-  cmd="display notification \"$message\""
-  $has_title && cmd="$cmd with title \"$title\""
+  _as_msg="${message//\\/\\\\}"; _as_msg="${_as_msg//\"/\\\"}"
+  _as_title="${title//\\/\\\\}"; _as_title="${_as_title//\"/\\\"}"
+  cmd="display notification \"$_as_msg\""
+  $has_title && cmd="$cmd with title \"$_as_title\""
   osascript -e "$cmd" 2>/dev/null
 fi
 
@@ -89,8 +94,19 @@ _say_smart() {
   fi
 }
 
+# Run a command in the background, track its PID, and detach it
+_run_bg() {
+  "$@" </dev/null >/dev/null 2>&1 &
+  echo $! >> "$pidfile"
+  disown $! 2>/dev/null
+}
+
+# Speak event label then dynamic gist (used as a single backgrounded unit)
+_narrate_with_gist() {
+  say "${say_device_args[@]}" "$1" && _say_smart "$2"
+}
+
 # Cancel any still-running previous notification (prevents voice overlap)
-pidfile="/tmp/claude-notify-pids"
 if [ -f "$pidfile" ]; then
   while read -r pid; do
     kill "$pid" 2>/dev/null
@@ -102,33 +118,21 @@ fi
 narrate_label="${title#Claude Code - }"
 if $has_title && $has_message; then
   if [ -n "$gist" ]; then
-    (say "${say_device_args[@]}" "$narrate_label" && _say_smart "$gist") </dev/null >/dev/null 2>&1 &
-    echo $! >> "$pidfile"
-    disown $! 2>/dev/null
+    _run_bg _narrate_with_gist "$narrate_label" "$gist"
   else
-    say "${say_device_args[@]}" "$narrate_label" </dev/null >/dev/null 2>&1 &
-    echo $! >> "$pidfile"
-    disown $! 2>/dev/null
+    _run_bg say "${say_device_args[@]}" "$narrate_label"
   fi
 elif $has_title; then
-  say "${say_device_args[@]}" "$narrate_label" </dev/null >/dev/null 2>&1 &
-  echo $! >> "$pidfile"
-  disown $! 2>/dev/null
+  _run_bg say "${say_device_args[@]}" "$narrate_label"
 elif $has_message; then
   if [ -n "$gist" ]; then
-    _say_smart "$gist" </dev/null >/dev/null 2>&1 &
-    echo $! >> "$pidfile"
-    disown $! 2>/dev/null
+    _run_bg _say_smart "$gist"
   else
-    _say_smart "$message" </dev/null >/dev/null 2>&1 &
-    echo $! >> "$pidfile"
-    disown $! 2>/dev/null
+    _run_bg _say_smart "$message"
   fi
 fi
 
 # Sound via afplay (independent of banner and voice)
 if $has_sound; then
-  afplay "/System/Library/Sounds/${sound}.aiff" </dev/null >/dev/null 2>&1 &
-  echo $! >> "$pidfile"
-  disown $! 2>/dev/null
+  _run_bg afplay "/System/Library/Sounds/${sound}.aiff"
 fi

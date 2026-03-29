@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [ -f /tmp/claude-notify-question-pending ]; then rm -f /tmp/claude-notify-question-pending; exit 0; fi; ${CLAUDE_PLUGIN_ROOT}/hooks/notify.sh permission 'Needs your permission to proceed'",
+            "command": "f=/tmp/claude-notify-question-pending-$PPID; if [ -f \"$f\" ]; then rm -f \"$f\"; exit 0; fi; ${CLAUDE_PLUGIN_ROOT}/hooks/notify.sh permission 'Needs your permission to proceed'",
             "timeout": 5
           }
         ]
@@ -50,7 +50,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "touch /tmp/claude-notify-question-pending && ${CLAUDE_PLUGIN_ROOT}/hooks/notify.sh question 'Has a question for you'",
+            "command": "touch /tmp/claude-notify-question-pending-$PPID && ${CLAUDE_PLUGIN_ROOT}/hooks/notify.sh question 'Has a question for you'",
             "timeout": 5
           }
         ]
