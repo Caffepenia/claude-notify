@@ -9,7 +9,7 @@
     {
       "name": "claude-notify",
       "description": "macOS desktop notifications for Claude Code (sound/title/message/banner)",
-      "version": "2.2.1",
+      "version": "2.2.2",
       "source": "./plugins/claude-notify",
       "category": "productivity"
     }
