@@ -1,6 +1,7 @@
 ---
+description: "切換通知元件 / toggle notifications — sound, title, message, banner. 留空開選單；all / off / device <name>."
 disable-model-invocation: true
-argument-hint: "[off|all|sound|title|message|banner|device ...|...]"
+argument-hint: "sound,title,message,banner ｜ all ｜ off ｜ device <name> ｜ (留空=選單)"
 allowed-tools:
   - Bash(echo *)
   - Bash(rm *)
